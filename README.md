@@ -30,7 +30,8 @@ The generated audio will be saved as `.wav` files using your voice as the refere
 ## Core Files
 
 ### Current Production Files
-- `train_full_yiddish.py` - **Main training script** (272 samples, enhanced architecture, WaveGlow vocoder)
+- `train_full_yiddish_safe.py` - **Safe training script** (resource-friendly, incremental training)
+- `train_full_yiddish.py` - **Full training script** (272 samples, enhanced architecture, high-performance)
 - `generate_yiddish_speech.py` - Generate Yiddish speech immediately using XTTS v2
 - `prepare_yiddish_data.py` - Processes your Yiddish dataset
 - `yiddish_train_data.txt` - Training data (272 samples)
@@ -51,7 +52,22 @@ The generated audio will be saved as `.wav` files using your voice as the refere
 
 ## Training Options
 
-### Option 1: Full Dataset Training (Recommended!)
+### Option 1: Safe Resource-Friendly Training (Recommended for most systems!)
+**Perfect for avoiding system overload** - trains slowly with minimal resource usage:
+```bash
+python train_full_yiddish_safe.py
+```
+**Features:**
+- ✅ Lightweight architecture (smaller model)
+- ✅ Tiny batch sizes (batch_size=1)
+- ✅ Short training sessions (5 epochs)
+- ✅ Memory cleanup and garbage collection
+- ✅ Frequent checkpointing
+- ✅ System-friendly (won't break your computer!)
+
+**Run multiple times for gradual improvement!**
+
+### Option 2: Full Dataset Training (High-Performance Systems)
 **Most comprehensive approach** - trains on all 272 samples with enhanced architecture:
 ```bash
 python train_full_yiddish.py
@@ -63,7 +79,9 @@ python train_full_yiddish.py
 - ✅ 25 training epochs for quality
 - ✅ Proper Hebrew character handling
 
-### Option 2: Zero-Shot Generation (Ready Now!)
+**⚠️ Warning: May require significant system resources**
+
+### Option 3: Zero-Shot Generation (Ready Now!)
 Use XTTS v2 for immediate Yiddish speech synthesis:
 ```bash
 python generate_yiddish_speech.py "Your Yiddish text here"
@@ -72,13 +90,13 @@ python generate_yiddish_speech.py "Your Yiddish text here"
 - ✅ Uses your voice as reference
 - ✅ Works with any Yiddish text
 
-### Option 3: Simple Fine-tuning
+### Option 4: Simple Fine-tuning
 Fine-tune existing multilingual models:
 ```bash
 python train_yiddish_simple.py
 ```
 
-### Option 4: Alternative Training
+### Option 5: Alternative Training
 For different architectures and approaches:
 ```bash
 python train_hebrew_tts.py --train
@@ -135,7 +153,7 @@ generate_yiddish_speech(
 )
 ```
 
-## Full Training Process
+## Training Process
 
 To train your own Yiddish TTS model from scratch:
 
@@ -144,12 +162,18 @@ To train your own Yiddish TTS model from scratch:
    python prepare_yiddish_data.py
    ```
 
-2. **Train the full model** (recommended):
+2. **Start with safe training** (recommended for most systems):
+   ```bash
+   python train_full_yiddish_safe.py
+   ```
+   Run this multiple times for gradual improvement. Each session trains for 5 epochs safely.
+
+3. **OR use full training** (high-performance systems only):
    ```bash
    python train_full_yiddish.py
    ```
 
-3. **Generate speech** with your trained model or use zero-shot:
+4. **Generate speech** with your trained model or use zero-shot:
    ```bash
    python generate_yiddish_speech.py "Your text here"
    ```
@@ -158,7 +182,8 @@ To train your own Yiddish TTS model from scratch:
 
 ```
 Bob_TTS/
-├── train_full_yiddish.py          # Main training script
+├── train_full_yiddish_safe.py     # 🐌 Safe training (recommended)
+├── train_full_yiddish.py          # 🚀 Full training (high-performance)
 ├── generate_yiddish_speech.py     # Speech generation
 ├── prepare_yiddish_data.py        # Data preparation  
 ├── train_yiddish_simple.py        # Simple training option
@@ -177,10 +202,11 @@ Bob_TTS/
 
 ## Next Steps
 
-1. **Try the full training**: `python train_full_yiddish.py`
+1. **Start with safe training**: `python train_full_yiddish_safe.py` (won't break your computer!)
 2. **Generate speech**: `python generate_yiddish_speech.py "Your text"`
-3. **Experiment with different reference voices** from your dataset
-4. **Fine-tune training parameters** in the scripts as needed
+3. **Run safe training multiple times** for gradual improvement
+4. **Try full training** only if you have a high-performance system: `python train_full_yiddish.py`
+5. **Experiment with different reference voices** from your dataset
 
 ---
 
