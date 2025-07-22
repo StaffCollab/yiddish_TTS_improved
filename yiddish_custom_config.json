@@ -1,0 +1,64 @@
+{
+  "model": "tacotron2",
+  "run_name": "yiddish_tacotron2",
+  "epochs": 1000,
+  "lr": 0.001,
+  "batch_size": 8,
+  "r": 1,
+  "grad_clip": 1.0,
+  "seq_len_norm": false,
+  "audio": {
+    "fft_size": 1024,
+    "sample_rate": 22050,
+    "frame_shift_ms": null,
+    "frame_length_ms": null,
+    "hop_length": 256,
+    "win_length": 1024,
+    "min_level_db": -100,
+    "ref_level_db": 20,
+    "power": 1.5,
+    "preemphasis": 0.97,
+    "n_mels": 80,
+    "mel_fmin": 0.0,
+    "mel_fmax": 8000.0
+  },
+  "datasets": [
+    {
+      "name": "yiddish_custom",
+      "path": "./",
+      "meta_file_train": "yiddish_train_data.txt",
+      "meta_file_val": "yiddish_train_data.txt"
+    }
+  ],
+  "characters": {
+    "characters_class": "TTS.tts.utils.text.characters.Phonemes",
+    "vocab_size": 50,
+    "characters": "ַָּאבגדהוזחטיךכלםמןנסעףפץצקרשת",
+    "punctuations": "!?.,;:()[]{}\"'- ",
+    "phonemes": "",
+    "pad": "_",
+    "eos": "~",
+    "bos": "^",
+    "blank": "|",
+    "is_unique": true,
+    "is_sorted": true
+  },
+  "text": {
+    "text_cleaner": "basic_cleaners",
+    "language": "yi",
+    "phoneme_language": "",
+    "add_blank": true,
+    "use_phonemes": false
+  },
+  "train_split": 0.9,
+  "val_split": 0.1,
+  "test_split": 0.0,
+  "print_step": 25,
+  "plot_step": 100,
+  "save_step": 500,
+  "save_n_checkpoints": 5,
+  "save_checkpoints": true,
+  "output_path": "./yiddish_training_output/",
+  "project_name": "YiddishTTS",
+  "run_description": "Training Yiddish TTS with Hebrew script support"
+}

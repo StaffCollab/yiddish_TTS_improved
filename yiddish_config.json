@@ -1,0 +1,16 @@
+{
+  "dataset_info": {
+    "language": "Yiddish",
+    "script": "Hebrew",
+    "total_samples": 272,
+    "unique_characters": 54,
+    "characters": " !\"'(),-.0123456789:;?[]ַָּאבגדהוזחטיךכלםמןנסעףפץצקרשת"
+  },
+  "training_params": {
+    "sample_rate": 22050,
+    "hop_length": 256,
+    "win_length": 1024,
+    "n_mels": 80,
+    "batch_size": 16
+  }
+}
