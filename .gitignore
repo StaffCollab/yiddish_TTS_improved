@@ -1,4 +1,56 @@
+# Dataset and audio files
 tts_segments/
+yiddish_tts_output/
+*.wav
+*.mp3
+
+# Models and checkpoints  
+*.pth
+*.ckpt
+*.pkl
+
+# Legacy and experimental files
 legacy/audio_outputs/
 legacy/models_and_tokenizers/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+tts_venv/
+venv/
+env/
+.env
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+.cache/
+.vincent/
+
+# TTS specific
+*.json.bak
+*_backup.*
 

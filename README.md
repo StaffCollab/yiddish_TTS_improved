@@ -7,7 +7,7 @@
 - ✅ **Yiddish Text Processing** - Handles Hebrew script characters properly
 - ✅ **Dataset Preparation** - 272 Yiddish audio-text segments ready for training  
 - ✅ **Character Tokenization** - 54 unique characters including Hebrew letters: אבגדהוזחטיךכלםמןנסעףפץצקרשת
-- ✅ **TTS Training Scripts** - Multiple approaches for training Yiddish models
+- ✅ **Advanced TTS Training** - Full dataset training with enhanced architecture
 - ✅ **Speech Generation** - Working Yiddish speech synthesis using XTTS v2
 
 ## Quick Start - Generate Yiddish Speech Now!
@@ -27,17 +27,18 @@ python generate_yiddish_speech.py
 
 The generated audio will be saved as `.wav` files using your voice as the reference.
 
-## Files Overview
+## Core Files
 
-### Data Preparation
+### Current Production Files
+- `train_full_yiddish.py` - **Main training script** (272 samples, enhanced architecture, WaveGlow vocoder)
+- `generate_yiddish_speech.py` - Generate Yiddish speech immediately using XTTS v2
 - `prepare_yiddish_data.py` - Processes your Yiddish dataset
 - `yiddish_train_data.txt` - Training data (272 samples)
 - `yiddish_config.json` - Dataset configuration
 
-### Training & Generation
-- `train_yiddish_simple.py` - Simple training approach using multilingual models
-- `generate_yiddish_speech.py` - Generate Yiddish speech immediately
-- `train_hebrew_tts.py` - Advanced training script (now updated for Yiddish)
+### Alternative Training Options
+- `train_yiddish_simple.py` - Simple approach using pre-trained multilingual models  
+- `train_hebrew_tts.py` - Advanced training script (alternative approach)
 
 ### Your Dataset
 - `tts_segments/` - Your original Yiddish audio and text files
@@ -45,22 +46,40 @@ The generated audio will be saved as `.wav` files using your voice as the refere
   - `text/` - 272 text segments (.txt files)
   - `segments_metadata.json` - Complete dataset metadata
 
+### Legacy Files
+- `legacy/` - Experimental files, older versions, and development iterations
+
 ## Training Options
 
-### Option 1: Zero-Shot Generation (Ready Now!)
+### Option 1: Full Dataset Training (Recommended!)
+**Most comprehensive approach** - trains on all 272 samples with enhanced architecture:
+```bash
+python train_full_yiddish.py
+```
+**Features:**
+- ✅ Complete dataset (272 samples)
+- ✅ Enhanced architecture with attention
+- ✅ WaveGlow vocoder integration
+- ✅ 25 training epochs for quality
+- ✅ Proper Hebrew character handling
+
+### Option 2: Zero-Shot Generation (Ready Now!)
 Use XTTS v2 for immediate Yiddish speech synthesis:
+```bash
+python generate_yiddish_speech.py "Your Yiddish text here"
+```
 - ✅ No training required
 - ✅ Uses your voice as reference
 - ✅ Works with any Yiddish text
 
-### Option 2: Fine-tune Multilingual Model
-Fine-tune existing models for better Yiddish:
+### Option 3: Simple Fine-tuning
+Fine-tune existing multilingual models:
 ```bash
 python train_yiddish_simple.py
 ```
 
-### Option 3: Train from Scratch
-For maximum control and quality:
+### Option 4: Alternative Training
+For different architectures and approaches:
 ```bash
 python train_hebrew_tts.py --train
 ```
@@ -116,36 +135,53 @@ generate_yiddish_speech(
 )
 ```
 
+## Full Training Process
+
+To train your own Yiddish TTS model from scratch:
+
+1. **Prepare the dataset** (already done):
+   ```bash
+   python prepare_yiddish_data.py
+   ```
+
+2. **Train the full model** (recommended):
+   ```bash
+   python train_full_yiddish.py
+   ```
+
+3. **Generate speech** with your trained model or use zero-shot:
+   ```bash
+   python generate_yiddish_speech.py "Your text here"
+   ```
+
+## Project Structure
+
+```
+Bob_TTS/
+├── train_full_yiddish.py          # Main training script
+├── generate_yiddish_speech.py     # Speech generation
+├── prepare_yiddish_data.py        # Data preparation  
+├── train_yiddish_simple.py        # Simple training option
+├── train_hebrew_tts.py            # Alternative training
+├── yiddish_train_data.txt         # Training data
+├── yiddish_config.json            # Configuration
+├── tts_segments/                  # Original dataset
+├── yiddish_tts_output/           # Generated outputs
+├── legacy/                        # Experimental & older files
+│   ├── training_experiments/     # Development iterations
+│   ├── test_files/               # Test scripts
+│   ├── models_and_tokenizers/    # Model checkpoints
+│   └── audio_outputs/            # Generated audio files
+└── tts_venv/                     # Python environment
+```
+
 ## Next Steps
 
-1. **Test the current system** - Try generating speech with your phrases
-2. **Experiment with different reference voices** - Use different segments from your dataset
-3. **Fine-tune for better quality** - Train on your specific voice and style
-4. **Share your work** - This is pioneering research in Yiddish technology!
-
-## Troubleshooting
-
-**"Reference audio not found"**
-- Make sure your audio files are in `tts_segments/audio/`
-- Check that the file paths in your metadata are correct
-
-**"Model loading slowly"**
-- First time downloads pre-trained models (few GB)
-- Subsequent runs will be much faster
-
-**"Poor pronunciation"**
-- Try different reference audio files from your dataset
-- Consider fine-tuning the model on your specific data
-
-## Contributing
-
-This is groundbreaking work in Yiddish language technology. Consider:
-- Sharing your results with Yiddish language communities
-- Contributing to open-source Yiddish NLP projects
-- Publishing your methodology for others to build upon
+1. **Try the full training**: `python train_full_yiddish.py`
+2. **Generate speech**: `python generate_yiddish_speech.py "Your text"`
+3. **Experiment with different reference voices** from your dataset
+4. **Fine-tune training parameters** in the scripts as needed
 
 ---
 
-**Mazel Tov on creating a Yiddish TTS system!** 🎊
-
-This project represents a significant advancement in preserving and modernizing Yiddish language technology. 
+**Note**: This project represents groundbreaking work in Yiddish language technology. The combination of Hebrew script processing, custom tokenization, and modern TTS architectures makes this one of the first functional Yiddish TTS systems. 
