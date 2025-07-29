@@ -424,11 +424,26 @@ This will be one of the first Yiddish Tacotron2 models! 🎉
 
 def main():
     """Main function"""
+    import sys
+    import os
+    
     show_requirements()
     
-    # Ask user if they want to proceed
-    print("\nReady to train Yiddish Tacotron2? (y/n): ", end="")
-    response = input().strip().lower()
+    # Check for auto-start modes
+    auto_start = (len(sys.argv) > 1 and sys.argv[1] == '--auto') or os.getenv('AUTO_TRAIN') == '1'
+    
+    if auto_start:
+        print("\n🚀 Auto-starting training (background mode)")
+        response = 'y'
+    else:
+        # Ask user if they want to proceed
+        print("\nReady to train Yiddish Tacotron2? (y/n): ", end="")
+        try:
+            response = input().strip().lower()
+        except (OSError, EOFError):
+            # Handle background execution where input() fails
+            print("\n🚀 Auto-starting training (background detected)")
+            response = 'y'
     
     if response in ['y', 'yes']:
         train_yiddish_tacotron2()
