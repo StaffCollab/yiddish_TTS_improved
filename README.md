@@ -5,9 +5,9 @@
 ## What We've Built
 
 - ✅ **Yiddish Text Processing** - Handles Hebrew script characters properly
-- ✅ **Dataset Preparation** - 272 Yiddish audio-text segments ready for training  
-- ✅ **Character Tokenization** - 54 unique characters including Hebrew letters: אבגדהוזחטיךכלםמןנסעףפץצקרשת
-- ✅ **Advanced TTS Training** - Full dataset training with enhanced architecture
+- ✅ **Advanced Dataset Preparation** - High-quality aligned audio-text segments ready for training  
+- ✅ **Character Tokenization** - 54+ unique characters including Hebrew letters: אבגדהוזחטיךכלםמןנסעףפץצקרשת
+- ✅ **State-of-the-Art TTS Training** - Multiple architectures including XTTS and optimized Tacotron2
 - ✅ **Speech Generation** - Working Yiddish speech synthesis using XTTS v2
 
 ## Quick Start - Generate Yiddish Speech Now!
@@ -29,59 +29,79 @@ The generated audio will be saved as `.wav` files using your voice as the refere
 
 ## Core Files
 
-### Current Production Files
-- `train_full_yiddish_safe.py` - **Safe training script** (resource-friendly, incremental training)
-- `train_full_yiddish.py` - **Full training script** (272 samples, enhanced architecture, high-performance)
+### **Current Production Training Scripts** (2025 Updated)
+- `train_yiddish_tacotron2_fast.py` - **🚀 Fast Tacotron2 training** (recommended for initial training)
+- `train_xtts_yiddish_perfect.py` - **🎯 XTTS training** (state-of-the-art architecture)
+- `train_yiddish_tacotron2_working.py` - **📊 Full Tacotron2 training** (with evaluation)
+- `train_full_yiddish_safe.py` - **🐌 Legacy safe training** (resource-friendly fallback)
+- `train_full_yiddish.py` - **⚡ Legacy full training** (older approach)
+
+### Generation & Data Preparation
 - `generate_yiddish_speech.py` - Generate Yiddish speech immediately using XTTS v2
-- `prepare_yiddish_data.py` - Processes your Yiddish dataset
-- `yiddish_train_data.txt` - Training data (272 samples)
-- `yiddish_config.json` - Dataset configuration
+- `prepare_perfect_data.py` - Processes your improved aligned dataset
+- `batch_perfect_mapper.py` - Creates perfect audio-text alignments
 
-### Alternative Training Options
-- `train_yiddish_simple.py` - Simple approach using pre-trained multilingual models  
-- `train_hebrew_tts.py` - Advanced training script (alternative approach)
+### **Your Datasets**
+- `perfect_mapped_segments/` - **🎯 High-quality aligned segments** (current production dataset)
+  - Multiple `file_audio*/` directories with precisely aligned audio-text pairs
+  - `*_metadata.json` files with segment timing information
+- `tts_segments/` - Original segments (272 audio-text pairs, legacy)
+- `original_files/` - Raw audio and transcript files
+- `word_lists/` - Vocabulary analysis files
 
-### Your Dataset
-- `tts_segments/` - Your original Yiddish audio and text files
-  - `audio/` - 272 audio segments (.wav files)
-  - `text/` - 272 text segments (.txt files)
-  - `segments_metadata.json` - Complete dataset metadata
+### Training Outputs
+- `yiddish_tacotron2_training/` - **Active training runs and checkpoints**
+- `yiddish_train_data.txt` - Training data file
+- `yiddish_config.json` - Legacy dataset configuration
 
 ### Legacy Files
 - `legacy/` - Experimental files, older versions, and development iterations
 
-## Training Options
+## Training Options (Updated for 2025)
 
-### Option 1: Safe Resource-Friendly Training (Recommended for most systems!)
-**Perfect for avoiding system overload** - trains slowly with minimal resource usage:
+### **Option 1: Fast Tacotron2 Training** ⭐ **RECOMMENDED**
+**Perfect for quick, high-quality results** - optimized for speed with excellent quality:
 ```bash
-python train_full_yiddish_safe.py
+python train_yiddish_tacotron2_fast.py
 ```
 **Features:**
-- ✅ Lightweight architecture (smaller model)
-- ✅ Tiny batch sizes (batch_size=1)
-- ✅ Short training sessions (5 epochs)
-- ✅ Memory cleanup and garbage collection
-- ✅ Frequent checkpointing
-- ✅ System-friendly (won't break your computer!)
+- ✅ **Latest optimized architecture** - Tacotron2 with speed optimizations
+- ✅ **Perfect mapped segments** - Uses high-quality aligned dataset
+- ✅ **Fast training** - Evaluation disabled for maximum speed
+- ✅ **Proven results** - Active training runs in `yiddish_tacotron2_training/`
+- ✅ **Hebrew character handling** - Proper RTL text processing
+- ✅ **16kHz audio** - Optimized sample rate
 
-**Run multiple times for gradual improvement!**
+**Best for: Initial training and quick iterations**
 
-### Option 2: Full Dataset Training (High-Performance Systems)
-**Most comprehensive approach** - trains on all 272 samples with enhanced architecture:
+### **Option 2: XTTS Training** 🎯 **HIGHEST QUALITY**
+**State-of-the-art architecture** - most advanced open-source TTS:
 ```bash
-python train_full_yiddish.py
+python train_xtts_yiddish_perfect.py
 ```
 **Features:**
-- ✅ Complete dataset (272 samples)
-- ✅ Enhanced architecture with attention
-- ✅ WaveGlow vocoder integration
-- ✅ 25 training epochs for quality
-- ✅ Proper Hebrew character handling
+- ✅ **XTTS architecture** - Latest Coqui TTS technology
+- ✅ **Perfect mapped segments** - High-quality aligned dataset
+- ✅ **Advanced features** - Multi-speaker, emotion control
+- ✅ **Professional quality** - Commercial-grade results
+- ✅ **Hebrew script optimized** - Designed for RTL languages
 
-**⚠️ Warning: May require significant system resources**
+**Best for: Production-quality models and advanced features**
 
-### Option 3: Zero-Shot Generation (Ready Now!)
+### **Option 3: Full Tacotron2 Training** 📊 **COMPREHENSIVE**
+**Complete training with evaluation** - thorough quality assessment:
+```bash
+python train_yiddish_tacotron2_working.py
+```
+**Features:**
+- ✅ **Full evaluation pipeline** - Quality metrics and validation
+- ✅ **Perfect mapped segments** - High-quality aligned dataset
+- ✅ **Comprehensive training** - Slower but thorough
+- ✅ **Quality monitoring** - Track training progress
+
+**Best for: Research and quality analysis**
+
+### **Option 4: Zero-Shot Generation** 🎤 **READY NOW**
 Use XTTS v2 for immediate Yiddish speech synthesis:
 ```bash
 python generate_yiddish_speech.py "Your Yiddish text here"
@@ -90,27 +110,22 @@ python generate_yiddish_speech.py "Your Yiddish text here"
 - ✅ Uses your voice as reference
 - ✅ Works with any Yiddish text
 
-### Option 4: Simple Fine-tuning
-Fine-tune existing multilingual models:
-```bash
-python train_yiddish_simple.py
-```
-
-### Option 5: Alternative Training
-For different architectures and approaches:
-```bash
-python train_hebrew_tts.py --train
-```
+### **Legacy Options** (For Compatibility)
+- **Safe Training**: `python train_full_yiddish_safe.py` (resource-friendly)
+- **Full Training**: `python train_full_yiddish.py` (older full approach)
+- **Simple Fine-tuning**: `python train_yiddish_simple.py` (multilingual models)
+- **Alternative Training**: `python train_hebrew_tts.py --train` (different architecture)
 
 ## Technical Details
 
 **Language**: Yiddish (ייִדיש)  
 **Script**: Hebrew characters  
-**Dataset Size**: 272 audio-text pairs  
+**Dataset**: Perfect aligned segments (improved quality over original 272 pairs)
 **Audio Format**: WAV files  
-**Sample Rate**: 22,050 Hz  
-**Character Set**: 54 unique characters  
+**Sample Rates**: 16kHz (optimized) / 22kHz (legacy)
+**Character Set**: 54+ unique characters  
 **Framework**: Coqui TTS with PyTorch  
+**Architectures**: XTTS, Tacotron2, Custom models
 
 ## Why This Matters
 
@@ -149,65 +164,77 @@ from generate_yiddish_speech import generate_yiddish_speech
 generate_yiddish_speech(
     text="שבת שלום", 
     output_file="my_output.wav",
-    reference_audio="tts_segments/audio/segment_0050.wav"
+    reference_audio="perfect_mapped_segments/file_audio1/audio/perfect_segment_0001.wav"
 )
 ```
 
-## Training Process
+## Training Process (Updated 2025)
 
 To train your own Yiddish TTS model from scratch:
 
-1. **Prepare the dataset** (already done):
+1. **Start with fast training** (recommended for most users):
    ```bash
-   python prepare_yiddish_data.py
+   python train_yiddish_tacotron2_fast.py
    ```
+   Uses perfect aligned segments for optimal quality and speed.
 
-2. **Start with safe training** (recommended for most systems):
+2. **OR use XTTS for highest quality** (advanced users):
    ```bash
-   python train_full_yiddish_safe.py
+   python train_xtts_yiddish_perfect.py
    ```
-   Run this multiple times for gradual improvement. Each session trains for 5 epochs safely.
+   State-of-the-art architecture with advanced features.
 
-3. **OR use full training** (high-performance systems only):
+3. **OR use comprehensive training** (researchers):
    ```bash
-   python train_full_yiddish.py
+   python train_yiddish_tacotron2_working.py
    ```
+   Full evaluation pipeline for detailed quality analysis.
 
 4. **Generate speech** with your trained model or use zero-shot:
    ```bash
    python generate_yiddish_speech.py "Your text here"
    ```
 
-## Project Structure
+## Project Structure (Updated)
 
 ```
 Bob_TTS/
-├── train_full_yiddish_safe.py     # 🐌 Safe training (recommended)
-├── train_full_yiddish.py          # 🚀 Full training (high-performance)
-├── generate_yiddish_speech.py     # Speech generation
-├── prepare_yiddish_data.py        # Data preparation  
-├── train_yiddish_simple.py        # Simple training option
-├── train_hebrew_tts.py            # Alternative training
-├── yiddish_train_data.txt         # Training data
-├── yiddish_config.json            # Configuration
-├── tts_segments/                  # Original dataset
-├── yiddish_tts_output/           # Generated outputs
-├── legacy/                        # Experimental & older files
-│   ├── training_experiments/     # Development iterations
-│   ├── test_files/               # Test scripts
-│   ├── models_and_tokenizers/    # Model checkpoints
-│   └── audio_outputs/            # Generated audio files
-└── tts_venv/                     # Python environment
+├── train_yiddish_tacotron2_fast.py    # 🚀 Fast Tacotron2 (recommended)
+├── train_xtts_yiddish_perfect.py      # 🎯 XTTS state-of-the-art
+├── train_yiddish_tacotron2_working.py # 📊 Full Tacotron2 evaluation
+├── generate_yiddish_speech.py         # Speech generation
+├── prepare_perfect_data.py            # Data preparation  
+├── batch_perfect_mapper.py            # Perfect alignment creation
+├── perfect_mapped_segments/           # 🎯 High-quality aligned dataset
+│   ├── file_audio1/                  # Aligned audio-text pairs
+│   ├── file_audio1_metadata.json     # Timing metadata
+│   └── ... (multiple audio files)
+├── yiddish_tacotron2_training/       # Active training runs & checkpoints
+├── tts_segments/                     # Original dataset (legacy)
+├── yiddish_tts_output/              # Generated outputs
+├── legacy/                          # Experimental & older files
+│   ├── training_experiments/        # Development iterations
+│   ├── test_files/                  # Test scripts
+│   ├── models_and_tokenizers/       # Model checkpoints
+│   └── audio_outputs/               # Generated audio files
+└── tts_venv/                        # Python environment
 ```
 
 ## Next Steps
 
-1. **Start with safe training**: `python train_full_yiddish_safe.py` (won't break your computer!)
-2. **Generate speech**: `python generate_yiddish_speech.py "Your text"`
-3. **Run safe training multiple times** for gradual improvement
-4. **Try full training** only if you have a high-performance system: `python train_full_yiddish.py`
-5. **Experiment with different reference voices** from your dataset
+1. **🚀 Start with fast training**: `python train_yiddish_tacotron2_fast.py` (recommended!)
+2. **🎤 Generate speech**: `python generate_yiddish_speech.py "Your text"`
+3. **🎯 Try XTTS for highest quality**: `python train_xtts_yiddish_perfect.py`
+4. **📊 Evaluate quality**: `python train_yiddish_tacotron2_working.py`
+5. **🔄 Experiment with different reference voices** from your perfect aligned dataset
+
+## Training Status
+
+- ✅ **Perfect alignment completed** - High-quality audio-text segments ready
+- ✅ **Active training runs** - Multiple Tacotron2 training sessions in progress
+- ✅ **Modern architectures** - XTTS and optimized Tacotron2 available
+- ✅ **Hebrew character handling** - Proper RTL text processing implemented
 
 ---
 
-**Note**: This project represents groundbreaking work in Yiddish language technology. The combination of Hebrew script processing, custom tokenization, and modern TTS architectures makes this one of the first functional Yiddish TTS systems. 
+**Note**: This project represents groundbreaking work in Yiddish language technology. The combination of perfect audio-text alignment, Hebrew script processing, custom tokenization, and state-of-the-art TTS architectures makes this one of the first functional high-quality Yiddish TTS systems. 

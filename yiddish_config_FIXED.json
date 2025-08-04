@@ -1,0 +1,44 @@
+{
+  "model": "tacotron2",
+  "characters": {
+    "pad": "_",
+    "eos": "~",
+    "bos": "^",
+    "characters": "ַָּ0123456789אבגדהוזחטיךכלםמןנסעףפץצקרשת",
+    "punctuations": "!\"'(),-.:;?[]",
+    "phonemes": "",
+    "is_unique": true,
+    "is_sorted": true
+  },
+  "datasets": [
+    {
+      "name": "yiddish_perfect_fixed",
+      "path": "./",
+      "meta_file_train": "yiddish_tacotron2_train_data_FIXED_NO_WAV.txt",
+      "meta_file_val": "",
+      "formatter": "ljspeech"
+    }
+  ],
+
+  "test_sentences": [
+    "געווען איז דאס פאריגע וואך מיטוואך, ווען איך",
+    "האב - אינאיינעם מיט נאך עטליכע - פארוויילט",
+    "אין אמעריקע'ס אפיציעלע הויפטשטאט - וואשינגטאן די-סי. נישט",
+    "צו שטיין און שמועסן, אבער אזויפיל האט ער",
+    "שבת שלום און א גוטן טאג"
+  ],
+  "min_audio_len": 8000,
+  "max_audio_len": 320000,
+  "min_text_len": 5,
+  "max_text_len": 500,
+  "batch_size": 4,
+  "lr": 0.0005,
+  "print_step": 25,
+  "save_step": 500,
+  "epochs": 100,
+  "grad_clip": 1.0,
+  "run_eval": true,
+  "eval_split_size": 0.05,
+  "audio_sample_rate": 16000,
+  "test_delay_epochs": 5
+}
