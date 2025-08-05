@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-FINAL: Yiddish-Native Whisper Alignment
-Use native Yiddish language detection for perfect audio-text alignment
+SIMPLE: Word-by-Word Whisper Timing
+Just get word durations from Whisper and apply them 1:1 to original transcript
 """
 
 import os
@@ -13,75 +13,86 @@ import torchaudio
 import warnings
 warnings.filterwarnings("ignore")
 
-def transcribe_yiddish_whisper(audio_path):
-    """Force Whisper to use Yiddish language detection"""
+def get_word_timings_from_whisper(audio_path):
+    """Get word timings from Whisper - just durations and what was spoken"""
     import whisper
     
-    print(f"🔄 Transcribing {Path(audio_path).name} with FORCED Yiddish detection...")
+    print(f"🔄 Getting word timings from {Path(audio_path).name}...")
     
     # Load model
     model = whisper.load_model("base")
     
-    # Force Yiddish language detection (the actual language!)
+    # Transcribe with word timestamps (force Yiddish language)
     result = model.transcribe(audio_path, language='yi', word_timestamps=True)
     
-    # Extract word-level timestamps
-    words_with_timing = []
+    # Extract just the word timings
+    word_timings = []
     for segment in result["segments"]:
         if "words" in segment:
             for word in segment["words"]:
-                words_with_timing.append({
+                word_timings.append({
                     'word': word['word'].strip(),
                     'start': word['start'],
-                    'end': word['end']
+                    'end': word['end'],
+                    'duration': word['end'] - word['start']
                 })
     
-    print(f"   ✅ Yiddish transcription: {len(words_with_timing)} words")
-    yiddish_text = ' '.join([w['word'] for w in words_with_timing[:10]])
-    print(f"   First 10 words: {yiddish_text}")
+    print(f"   ✅ Got timings for {len(word_timings)} words")
+    print(f"   Whisper detected: {' '.join([w['word'] for w in word_timings[:8]])}...")
     
-    return words_with_timing, result['text']
+    return word_timings
 
-def align_yiddish_transcripts(original_transcript, yiddish_whisper_words):
-    """Smart alignment between original Yiddish transcript and Whisper Yiddish output"""
-    print("🔗 Aligning original Yiddish transcript with Yiddish Whisper...")
+def align_words_simple(original_transcript, whisper_timings):
+    """Simple 1:1 word alignment using Whisper timings"""
+    print("🔗 Simple word-by-word alignment...")
     
     original_words = original_transcript.strip().split()
-    whisper_words = [w['word'] for w in yiddish_whisper_words]
     
-    print(f"   Original: {len(original_words)} words")
-    print(f"   Yiddish Whisper: {len(whisper_words)} words")
+    print(f"   Original words: {len(original_words)}")
+    print(f"   Whisper timings: {len(whisper_timings)}")
+    print(f"   Original text: {' '.join(original_words[:8])}...")
     
-    # Simple sequential alignment (both are now Yiddish)
     aligned_words = []
     
-    for i, orig_word in enumerate(original_words):
-        if i < len(yiddish_whisper_words):
-            # Use Whisper timing with original text
-            timing = yiddish_whisper_words[i]
-            aligned_words.append({
-                'word': orig_word,  # Use original text
-                'start': timing['start'],
-                'end': timing['end'],
-                'whisper_word': timing['word']  # Keep Whisper's version for reference
-            })
-        else:
-            # Estimate timing for remaining words
-            if aligned_words:
-                last_end = aligned_words[-1]['end']
+    # Use the shorter of the two lists to avoid index errors
+    min_length = min(len(original_words), len(whisper_timings))
+    
+    for i in range(min_length):
+        original_word = original_words[i]
+        timing = whisper_timings[i]
+        
+        aligned_words.append({
+            'word': original_word,  # Use original transcript word
+            'start': timing['start'],
+            'end': timing['end'],
+            'duration': timing['duration'],
+            'whisper_word': timing['word']  # What Whisper heard (for debugging)
+        })
+    
+    # Handle extra original words if any
+    if len(original_words) > len(whisper_timings):
+        print(f"   ⚠️  Original has {len(original_words) - len(whisper_timings)} extra words")
+        # Estimate timing for remaining words
+        if aligned_words:
+            last_end = aligned_words[-1]['end']
+            avg_duration = sum(w['duration'] for w in aligned_words) / len(aligned_words)
+            
+            for i in range(len(whisper_timings), len(original_words)):
+                start_time = last_end + (i - len(whisper_timings)) * avg_duration
                 aligned_words.append({
-                    'word': orig_word,
-                    'start': last_end,
-                    'end': last_end + 0.5,
-                    'whisper_word': ''
+                    'word': original_words[i],
+                    'start': start_time,
+                    'end': start_time + avg_duration,
+                    'duration': avg_duration,
+                    'whisper_word': '[estimated]'
                 })
     
     print(f"   ✅ Aligned {len(aligned_words)} words")
     return aligned_words
 
-def create_hebrew_tts_segments(aligned_words, target_duration=6, max_duration=10):
-    """Create TTS segments from Hebrew-aligned words"""
-    print(f"✂️  Creating Hebrew TTS segments (target: {target_duration}s)")
+def create_tts_segments_simple(aligned_words, target_duration=6):
+    """Create TTS segments from aligned words"""
+    print(f"✂️  Creating TTS segments (target: {target_duration}s per segment)")
     
     segments = []
     current_words = []
@@ -94,26 +105,23 @@ def create_hebrew_tts_segments(aligned_words, target_duration=6, max_duration=10
         current_words.append(word_info['word'])
         current_duration = word_info['end'] - current_start
         
-        # End segment criteria
-        should_end = False
-        if current_duration >= target_duration or len(current_words) >= 12:
-            should_end = True
+        # End segment when we hit target duration or word limit
+        should_end = (current_duration >= target_duration or 
+                     len(current_words) >= 15 or 
+                     i == len(aligned_words) - 1)
         
-        if should_end or i == len(aligned_words) - 1:
-            # End exactly at word boundary with small safety gap
-            segment_end = word_info['end']
-            if i + 1 < len(aligned_words):
-                next_start = aligned_words[i + 1]['start']
-                segment_end = min(segment_end, next_start - 0.02)
-            
+        if should_end:
             segment_text = ' '.join(current_words)
             segments.append({
                 'start': current_start,
-                'end': segment_end,
-                'duration': segment_end - current_start,
+                'end': word_info['end'],
+                'duration': word_info['end'] - current_start,
                 'text': segment_text,
                 'word_count': len(current_words)
             })
+            
+            print(f"   Segment {len(segments)}: {current_duration:.1f}s, {len(current_words)} words")
+            print(f"     Text: {segment_text[:50]}...")
             
             current_words = []
             current_start = None
@@ -121,9 +129,9 @@ def create_hebrew_tts_segments(aligned_words, target_duration=6, max_duration=10
     print(f"   ✅ Created {len(segments)} segments")
     return segments
 
-def extract_hebrew_audio_segments(audio_path, segments, output_dir="tts_segments_hebrew"):
-    """Extract properly aligned Hebrew audio segments"""
-    print(f"🎵 Extracting Hebrew-aligned segments to {output_dir}/")
+def extract_audio_segments_simple(audio_path, segments, output_dir="tts_segments_hebrew"):
+    """Extract audio segments using simple timing"""
+    print(f"🎵 Extracting segments to {output_dir}/")
     
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
@@ -132,6 +140,7 @@ def extract_hebrew_audio_segments(audio_path, segments, output_dir="tts_segments
     
     # Load audio
     audio, sr = torchaudio.load(audio_path)
+    print(f"   Audio: {audio.shape[1]/sr:.1f}s total duration")
     
     extracted_segments = []
     
@@ -139,7 +148,10 @@ def extract_hebrew_audio_segments(audio_path, segments, output_dir="tts_segments
         start_sample = int(segment['start'] * sr)
         end_sample = int(segment['end'] * sr)
         
-        if start_sample < audio.shape[1] and end_sample <= audio.shape[1]:
+        # Make sure we don't go beyond audio length
+        end_sample = min(end_sample, audio.shape[1])
+        
+        if start_sample < audio.shape[1]:
             audio_segment = audio[:, start_sample:end_sample]
             
             # Save files
@@ -162,75 +174,70 @@ def extract_hebrew_audio_segments(audio_path, segments, output_dir="tts_segments
                 'word_count': segment['word_count']
             })
             
-            print(f"   ✅ {audio_file.name} - {segment['duration']:.1f}s, {segment['word_count']} words")
+            print(f"   ✅ {audio_file.name} - {segment['duration']:.1f}s")
     
     # Save metadata
     metadata_file = output_dir / "segments_metadata.json"
     with open(metadata_file, 'w', encoding='utf-8') as f:
         json.dump(extracted_segments, f, indent=2, ensure_ascii=False)
     
-    print(f"   📄 Metadata saved: {metadata_file}")
+    print(f"   📄 Metadata: {metadata_file}")
     return extracted_segments
 
-def demo_yiddish_alignment():
-    """Demo Yiddish-forced Whisper alignment"""
-    print("🗣️ YIDDISH-FORCED WHISPER ALIGNMENT")
-    print("=" * 55)
-    print("Using NATIVE Yiddish language detection")
-    print("=" * 55)
+def demo_simple_alignment():
+    """Demo simple word-by-word alignment"""
+    print("🔄 SIMPLE WORD-BY-WORD ALIGNMENT")
+    print("=" * 50)
+    print("Get word timings from Whisper → Apply to original transcript")
+    print("=" * 50)
     
     # Find files
     audio_files = sorted(Path("original_files/audio").glob("audio*.wav"))[:1]
     transcript_files = sorted(Path("original_files/transcripts").glob("transcription*.txt"))[:1]
     
     if not audio_files or not transcript_files:
-        print("❌ No original files found")
+        print("❌ No files found in original_files/")
         return
     
     audio_path = str(audio_files[0])
     transcript_path = str(transcript_files[0])
     
-    print(f"Processing: {Path(audio_path).name}")
+    print(f"🎵 Audio: {Path(audio_path).name}")
+    print(f"📝 Transcript: {Path(transcript_path).name}")
     
     try:
         # Load original transcript
         with open(transcript_path, 'r', encoding='utf-8') as f:
             original_transcript = f.read().strip()
         
-        print(f"📝 Original transcript (first 50 chars): {original_transcript[:50]}...")
+        print(f"\n📝 Original: {original_transcript[:100]}...")
         
-        # Get Yiddish Whisper transcription
-        yiddish_words, yiddish_full_text = transcribe_yiddish_whisper(audio_path)
+        # Get word timings from Whisper
+        word_timings = get_word_timings_from_whisper(audio_path)
         
-        print(f"🔄 Yiddish Whisper (first 50 chars): {yiddish_full_text[:50]}...")
-        
-        # Align transcripts
-        aligned_words = align_yiddish_transcripts(original_transcript, yiddish_words)
+        # Simple alignment
+        aligned_words = align_words_simple(original_transcript, word_timings)
         
         # Create segments
-        segments = create_hebrew_tts_segments(aligned_words)
+        segments = create_tts_segments_simple(aligned_words)
         
         # Extract audio
-        extracted = extract_hebrew_audio_segments(audio_path, segments)
+        extracted = extract_audio_segments_simple(audio_path, segments)
         
-        print(f"\n✅ Yiddish alignment completed!")
-        print(f"   Created {len(extracted)} Yiddish-aligned segments")
-        print(f"   Output directory: tts_segments_hebrew/")
+        print(f"\n✅ SIMPLE ALIGNMENT COMPLETE!")
+        print(f"   📁 Output: tts_segments_hebrew/")
+        print(f"   🎵 Audio segments: {len(extracted)}")
         
-        print(f"\n🧪 Test the first segment:")
-        print(f"   Audio: {extracted[0]['audio_file']}")
-        print(f"   Text: {extracted[0]['text']}")
-        print(f"   Duration: {extracted[0]['duration']:.2f}s")
-        
-        print(f"\n🎯 This should finally work because:")
-        print("   ✅ Both audio and text are in Yiddish")
-        print("   ✅ Whisper forced to NATIVE Yiddish language detection")
-        print("   ✅ Word timings should align perfectly with Yiddish content")
+        if extracted:
+            print(f"\n🧪 First segment:")
+            print(f"   Text: {extracted[0]['text']}")
+            print(f"   Duration: {extracted[0]['duration']:.2f}s")
+            print(f"   File: {extracted[0]['audio_file']}")
         
     except Exception as e:
-        print(f"❌ Yiddish alignment failed: {e}")
+        print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":
-    demo_yiddish_alignment() 
+    demo_simple_alignment() 

@@ -18,13 +18,25 @@ import soundfile as sf
 # Import whisper functionality
 try:
     import whisper
-    from faster_whisper import WhisperModel
-    import whisperx
     WHISPER_AVAILABLE = True
+    print("✅ Whisper imported successfully")
 except ImportError as e:
-    print(f"⚠️  Whisper imports failed: {e}")
-    print("    Pipeline will attempt basic whisper only")
+    print(f"❌ Whisper import failed: {e}")
+    print("    Please install: pip install openai-whisper")
     WHISPER_AVAILABLE = False
+
+# Optional advanced whisper imports
+try:
+    from faster_whisper import WhisperModel
+    FASTER_WHISPER_AVAILABLE = True
+except ImportError:
+    FASTER_WHISPER_AVAILABLE = False
+
+try:
+    import whisperx
+    WHISPERX_AVAILABLE = True
+except ImportError:
+    WHISPERX_AVAILABLE = False
 
 class YiddishAlignmentPipeline:
     def __init__(self, base_dir="original_files", output_dir="aligned_dataset"):
@@ -39,29 +51,45 @@ class YiddishAlignmentPipeline:
         (self.output_dir / "timings").mkdir(exist_ok=True)
         (self.output_dir / "metadata").mkdir(exist_ok=True)
         
+        # Check whisper availability
+        if not WHISPER_AVAILABLE:
+            raise Exception("Whisper is not available. Please install: pip install openai-whisper")
+        
         # Load whisper model once
         self.whisper_model = None
         self.load_whisper_model()
     
     def load_whisper_model(self):
         """Load Whisper model for transcription"""
+        print("🤖 Loading Whisper model...")
+        
         try:
-            print("🤖 Loading Whisper model...")
-            
             # Try to force CUDA if available
             import torch
             if torch.cuda.is_available():
                 device = "cuda"
-                print(f"   🚀 Using GPU: {torch.cuda.get_device_name(0)}")
-            else:
-                device = "cpu"
-                print(f"   💻 Using CPU (CUDA not available)")
+                try:
+                    gpu_name = torch.cuda.get_device_name(0)
+                    print(f"   🚀 Attempting GPU: {gpu_name}")
+                except:
+                    print(f"   🚀 Attempting GPU loading...")
+                
+                try:
+                    self.whisper_model = whisper.load_model("base", device=device)
+                    print("✅ Whisper model loaded on GPU")
+                    return
+                except Exception as gpu_error:
+                    print(f"   ⚠️  GPU loading failed: {gpu_error}")
+                    print("   🔄 Falling back to CPU...")
             
-            self.whisper_model = whisper.load_model("base", device=device)
-            print("✅ Whisper model loaded successfully")
+            # Fallback to CPU
+            print("   💻 Using CPU")
+            self.whisper_model = whisper.load_model("base")
+            print("✅ Whisper model loaded on CPU")
+            
         except Exception as e:
             print(f"❌ Failed to load Whisper model: {e}")
-            print("   Will attempt fallback methods")
+            raise Exception(f"Could not load Whisper model: {e}")
     
     def get_audio_transcript_pairs(self) -> List[Tuple[Path, Path]]:
         """Get all matching audio/transcript pairs"""
@@ -81,9 +109,6 @@ class YiddishAlignmentPipeline:
     
     def transcribe_with_timing(self, audio_path: Path) -> List[Dict]:
         """Get word-level timing from Whisper"""
-        
-        if not self.whisper_model:
-            raise Exception("Whisper model not available")
         
         print(f"   🎤 Transcribing {audio_path.name}...")
         

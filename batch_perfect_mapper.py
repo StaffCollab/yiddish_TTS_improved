@@ -76,59 +76,79 @@ def create_direct_mapping(original_words, whisper_timings):
     
     return mapped_words
 
-def create_segments_from_mapping(mapped_words, words_per_segment=8, end_buffer=1.0):
-    """Group mapped words into segments for TTS training with end buffer"""
-    
+def create_segments_from_mapping(mapped_words, target_duration=10.0, max_words=25, end_buffer=0.5):
+    """
+    Create smarter TTS segments from word timings. Aims for a target duration,
+    respects sentence-ending punctuation, and avoids creating tiny or huge segments.
+    """
+    if not mapped_words:
+        return []
+
     segments = []
-    current_segment = []
+    current_segment_words = []
+    segment_start_time = mapped_words[0]['start']
     segment_id = 1
-    
-    for word_data in mapped_words:
-        current_segment.append(word_data)
-        
-        # Create segment when we reach target length
-        if len(current_segment) >= words_per_segment:
-            segment_text = ' '.join(w['original_word'] for w in current_segment)
-            segment_start = current_segment[0]['start']
-            segment_end_raw = current_segment[-1]['end']
+
+    for i, word_info in enumerate(mapped_words):
+        # Word must have valid timing data to be included
+        if word_info['start'] is None or word_info['end'] is None:
+            continue
+
+        current_segment_words.append(word_info)
+        current_duration = word_info['end'] - segment_start_time
+
+        # Check for sentence-ending punctuation (., ?, !) to find natural breakpoints
+        word_text = word_info.get('original_word', word_info.get('whisper_word', ''))
+        is_sentence_end = word_text.strip()[-1] in ".?!" if word_text.strip() else False
+        is_last_word = (i == len(mapped_words) - 1)
+
+        # Determine if the segment should be ended
+        should_end_segment = (
+            is_last_word or 
+            (current_duration >= target_duration and is_sentence_end) or 
+            current_duration >= 15.0 or 
+            len(current_segment_words) >= max_words
+        )
+
+        if should_end_segment:
+            # Create segment text from original words (preferred) or whisper words
+            segment_words = []
+            for w in current_segment_words:
+                word_to_use = w.get('original_word', w.get('whisper_word', ''))
+                if word_to_use:
+                    segment_words.append(word_to_use)
             
-            # Add buffer for complete speech capture (overlaps OK for TTS)
-            segment_end_buffered = segment_end_raw + end_buffer
-            
-            segments.append({
-                'segment_id': f"{segment_id:04d}",
-                'start': segment_start,
-                'end': segment_end_buffered,
-                'duration': segment_end_buffered - segment_start,
-                'text': segment_text,
-                'word_count': len(current_segment),
-                'words': current_segment
-            })
-            
-            current_segment = []
-            segment_id += 1
-    
-    # Handle remaining words
-    if current_segment:
-        segment_text = ' '.join(w['original_word'] for w in current_segment)
-        segment_start = current_segment[0]['start']
-        segment_end_raw = current_segment[-1]['end']
-        segment_end_buffered = segment_end_raw + end_buffer
-        
-        segments.append({
-            'segment_id': f"{segment_id:04d}",
-            'start': segment_start,
-            'end': segment_end_buffered,
-            'duration': segment_end_buffered - segment_start,
-            'text': segment_text,
-            'word_count': len(current_segment),
-            'words': current_segment
-        })
-    
-    print(f"   📦 Created {len(segments)} segments")
+            segment_text = " ".join(segment_words)
+            segment_end_time = current_segment_words[-1]['end'] + end_buffer
+
+            # Final check to ensure the segment is not too short
+            if (segment_end_time - segment_start_time) > 1.0 and segment_text.strip():
+                segments.append({
+                    'segment_id': f"{segment_id:04d}",
+                    'start': segment_start_time,
+                    'end': segment_end_time,
+                    'duration': segment_end_time - segment_start_time,
+                    'text': segment_text,
+                    'word_count': len(current_segment_words),
+                    'words': current_segment_words
+                })
+                segment_id += 1
+
+            # Start a new segment
+            if not is_last_word:
+                # Find the start time of the next word to begin the new segment
+                next_word_index = i + 1
+                while next_word_index < len(mapped_words) and mapped_words[next_word_index]['start'] is None:
+                    next_word_index += 1
+                
+                if next_word_index < len(mapped_words):
+                    current_segment_words = []
+                    segment_start_time = mapped_words[next_word_index]['start']
+
+    print(f"   📦 Created {len(segments)} natural segments")
     return segments
 
-def export_perfect_alignment(segments, audio_id, audio_path, output_dir="perfect_mapped_segments"):
+def export_perfect_alignment(segments, audio_id, audio_path, output_dir="natural_mapped_segments"):
     """Export the perfectly aligned segments"""
     
     output_path = Path(output_dir)
@@ -227,7 +247,7 @@ def process_single_file(audio_id, audio_path, transcript_path, word_list_path):
         mapped_words = create_direct_mapping(original_words, whisper_timings)
         
         # Create segments with generous overlap for robust TTS training
-        segments = create_segments_from_mapping(mapped_words, words_per_segment=8, end_buffer=1.0)
+        segments = create_segments_from_mapping(mapped_words, target_duration=10.0, max_words=25, end_buffer=0.5)
         
         # Export everything
         segment_count = export_perfect_alignment(segments, audio_id, audio_path)
@@ -287,7 +307,7 @@ def main():
         return
     
     # Check for completed files (checkpoint)
-    completed = get_completed_files()
+    completed = get_completed_files("natural_mapped_segments")
     if completed:
         print(f"🔄 Found {len(completed)} already completed files (resuming): {sorted(completed)}")
     
@@ -307,7 +327,7 @@ def main():
             
             # Count words and segments for this file
             try:
-                metadata_file = Path("perfect_mapped_segments") / f"file_{audio_id}_metadata.json"
+                metadata_file = Path("natural_mapped_segments") / f"file_{audio_id}_metadata.json"
                 if metadata_file.exists():
                     with open(metadata_file, 'r', encoding='utf-8') as f:
                         metadata = json.load(f)
@@ -325,7 +345,7 @@ def main():
     print(f"   Total completed: {total_completed}")
     print(f"   Total segments created: {total_segments}")
     print(f"   Total words aligned: {total_words}")
-    print(f"   Output directory: perfect_mapped_segments/")
+    print(f"   Output directory: natural_mapped_segments/")
     print(f"   🎯 PERFECT ALIGNMENT: Every Yiddish word has exact timing!")
 
 if __name__ == "__main__":

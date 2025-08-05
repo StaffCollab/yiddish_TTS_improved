@@ -1,0 +1,84 @@
+{
+  "model": "tacotron2",
+  "run_name": "yiddish_tacotron2_natural",
+  "output_path": "./yiddish_tacotron2_training/",
+  
+  "datasets": [
+    {
+      "name": "yiddish_natural_segments",
+      "path": "./",
+      "meta_file_train": "yiddish_tacotron2_natural_train_data.txt",
+      "meta_file_val": "",
+      "formatter": "ljspeech"
+    }
+  ],
+
+  "characters": {
+    "pad": "_",
+    "eos": "~", 
+    "bos": "^",
+    "characters": "ַָּ0123456789אבגדהוזחטיךכלםמןנסעףפץצקרשת",
+    "punctuations": "!\"'(),-.:;?[]",
+    "phonemes": "",
+    "is_unique": true,
+    "is_sorted": true
+  },
+
+  "test_sentences": [
+    "געווען איז דאס פאריגע וואך מיטוואך, ווען איך האב - אינאיינעם מיט נאך עטליכע - פארוויילט אין אמעריקע'ס אפיציעלע הויפטשטאט וואשינגטאן די-סי.",
+    "נישט צו שטיין און שמועסן, אבער אזויפיל האט ער געקענט זאגן אז ער איז אין אמעריקע שוין די צווייטע וואך.",
+    "שבת שלום און א גוטן טאג צו אלע מיינע טייערע צוהערער און צוהערערינס.",
+    "איך וויל איך זאל קענען רעדן מיט אייך אויף יידיש און איר זאלט מיך פארשטיין.",
+    "דאס איז א טעסט פון מיין נייע קול סינטעז סיסטעם."
+  ],
+
+  "audio": {
+    "sample_rate": 16000,
+    "resample": true,
+    "do_trim_silence": true,
+    "trim_db": 60,
+    "preemphasis": 0.97,
+    "ref_level_db": 20,
+    "spec_gain": 20,
+    "signal_norm": true,
+    "symmetric_norm": true,
+    "max_norm": 4,
+    "clip_norm": true,
+    "mel_fmin": 0,
+    "mel_fmax": 8000,
+    "n_fft": 1024,
+    "hop_length": 256,
+    "win_length": 1024,
+    "n_mels": 80,
+    "power": 1.5,
+    "griffin_lim_iters": 60
+  },
+
+  "optimizer": "RAdam",
+  "lr_scheduler": "NoamLR",
+  "lr_scheduler_params": {
+    "warmup_steps": 4000
+  },
+
+  "batch_size": 32,
+  "eval_batch_size": 16,
+  "epochs": 1000,
+  "lr": 0.0005,
+  "grad_clip": 1.0,
+
+  "min_audio_len": 8000,
+  "max_audio_len": 320000,
+  "min_text_len": 10,
+  "max_text_len": 500,
+
+  "run_eval": true,
+  "eval_split_size": 0.05,
+  "print_step": 25,
+  "save_step": 500,
+  "test_delay_epochs": 5,
+
+  "use_speaker_embedding": false,
+  "num_speakers": 1,
+  "use_external_speaker_embedding_file": false,
+  "mixed_precision": false
+} 
